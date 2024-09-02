@@ -3,8 +3,9 @@ import dotenv from "dotenv";
 import express from "express";
 import cors from "cors";
 import bodyParser from "body-parser";
-import sequelize from './config/database.js';
-import Chat from './models/Chat.js';
+import { supabase } from "./config/supabase.js";
+// import sequelize from './config/database.js';
+// import Chat from './models/Chat.js';
 
 const app = express();
 const port = 8000;
@@ -31,19 +32,33 @@ app.post("/", async (req, res) => {
     });
 });
 
+// Endpoint para guardar chats
 app.post("/saveChats", async (req, res) => {
-  let { chats } = req.body;
-  console.log("chats", chats);
-  
-  try {
-    const newChat = await Chat.create({ chats });
-    res.json({ message: "Chats saved successfully", chat: newChat });
-  } catch (error) {
-    console.error("Error saving chats:", error);
-    res.status(500).json({ message: "Error saving chats" });
+  const chats = req.body;
+
+  const { data, error } = await supabase
+    .from('Chats')
+    .insert([{ chats: chats }]);
+
+  if (error) {
+    return res.status(500).json({ error: error.message });
   }
+
+  res.status(200).json({ data });
 });
 
+// Endpoint para obtener todos los chats
+app.get("/getChats", async (req, res) => {
+    const { data, error } = await supabase
+      .from('Chats')
+      .select('*');
+  
+    if (error) {
+      return res.status(500).json({ error: error.message });
+    }
+  
+    res.status(200).json({ data });
+  });
 
 app.listen(port, () => {
   console.log(`Server running on port ${port}`);

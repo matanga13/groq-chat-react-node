@@ -8,7 +8,7 @@ function PreviousChats({ onSelectChat, allChats }) {
       <ul>
         {allChats.map((chat, index) => (
           <li key={index} onClick={() => onSelectChat(chat)}>
-            Conversación {index + 1}
+            Conversación {index + 1} -- {new Date(chat[0].timestamp).toLocaleString()}
           </li>
         ))}
       </ul>

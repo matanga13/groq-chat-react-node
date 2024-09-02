@@ -9,16 +9,24 @@ export const sendMessage = async (message, chats, setChats, setIsTyping) => {
   setChats(updatedChats);
 
   try {
-    const response = await sendChatsToServer(updatedChats);
+    const chatsWithoutTimestamp = removeTimestamp(updatedChats);
+    const response = await sendChatsToServer(chatsWithoutTimestamp);
     const data = await response.json();
     const outputChat = data.output;
     updatedChats.push(outputChat);
     setChats(updatedChats);
     setIsTyping(false);
-    scrollToBottom();
   } catch (error) {
-    console.error(error);
+    console.error("Error sending message:", error);
+    setIsTyping(false);
   }
+};
+
+const removeTimestamp = (chats) => {
+  return chats.map(chat => {
+    const { timestamp, ...rest } = chat;
+    return rest;
+  });
 };
 
 const scrollToBottom = () => {
@@ -26,7 +34,7 @@ const scrollToBottom = () => {
 };
 
 const createChat = (role, content) => {
-  return { role, content };
+  return { role, content, timestamp: new Date().toISOString()};
 };
 
 const sendChatsToServer = async (chats) => {
